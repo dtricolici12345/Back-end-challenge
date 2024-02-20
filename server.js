@@ -1,28 +1,53 @@
 const http = require('http');
+const fs = require('fs')
 
-let requestCount = 0
 
-const server = http.createServer((req,res) => {
-     if (req.url === '/favicon.ico') {
-        res.writeHead(200, { 'Content-Type': 'image/x-icon' });
-        res.end();
-        return;
-     }
-    requestCount++
-
-switch(req.url) {
-    case '/students': 
-    res.write("students" + requestCount) 
-    break;
-    case "/cours": 
-    res.write("front+back")
-    break;
-    default:
-        res.write ('Not found ')
+const delay = (ns) => {
+    return new Promise((resolve, reject)=> {
+        setTimeout(() => {
+            resolve()
+        },ns )   
+    })
 }
 
-    console.log(requestCount)
-    res.end()
+
+const readFile = (path) => {
+    return new Promise((resolve, reject) => {
+         fs.readFile(path, (err, data) => {
+                if (err) reject(err)
+                else resolve(data)
+            })  
+    })
+
+}
+
+const server = http.createServer(async (req, res) => {
+    switch (req.url) {
+        case '/home': {
+try {
+         const data =  await readFile('pages/home.html')
+         res.write(data)
+         res.end()
+         
+        } catch (err) {
+            res.write('Somthing wrong, 500')
+            res.end()
+        }
+        }
+
+        case '/about': {
+           await  delay(300)
+               res.write('ABOUT COURSE')
+                res.end(); 
+         
+            break;
+        }
+      
+        default: {
+            res.write('404 NOT FOUND')
+            res.end()
+        }
+    }
 })
 
 server.listen(3003)
